@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ziwei/GS_catkin_ws/src/SSDdetect/include/fp16.h
+
+/home/ziwei/GS_catkin_ws/src/SSDdetect/src/fp16.c
+fp16.h
+/home/ziwei/GS_catkin_ws/src/SSDdetect/src/fp16.h
+

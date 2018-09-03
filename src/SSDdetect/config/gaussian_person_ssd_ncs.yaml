@@ -1,0 +1,11 @@
+ssd_model:
+  graph_file:
+    name: Mobile-SSD_zhb_graph
+  threshold:
+    value: 0.3
+  detection_classes:
+    names:
+      - background
+      - person
+      - face
+

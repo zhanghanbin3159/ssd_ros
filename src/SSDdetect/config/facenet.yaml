@@ -1,0 +1,3 @@
+facenet_model:
+  graph_file:
+    name: facenet_graph

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+ <param name="use_sim_time" value="true" />
+
+ <!-- Console launch prefix -->
+  <arg name="launch_prefix" default=""/>
+
+  <!-- Config folder. -->
+  <arg name="ssd_config_path" default="$(find ssddetect)/ssd_network_config/cfg"/>
+
+  <!-- graph folder. -->
+  <arg name="ssd_graph_path"  default="$(find ssddetect)/ssd_network_config/graph"/>
+
+  <!-- Load parameters -->
+  <rosparam command="load" ns="ssddetect" file="$(find ssddetect)/config/ros.yaml"/>
+  <rosparam command="load" ns="ssddetect" file="$(find ssddetect)/config/gaussian_person_ssd_ncs.yaml"/>
+  <rosparam command="load" ns="ssddetect" file="$(find ssddetect)/config/cameraParams.yaml"/>
+  <rosparam command="load" ns="ssddetect" file="$(find ssddetect)/config/facenet.yaml"/>
+
+  <!--rosparam command="load" file="$(find human_track)/config/ros.yaml"/>
+  <rosparam command="load"  file="$(find human_track)/config/gaussian_person_ncs.yaml"/-->
+
+  <!--node pkg="ssddetect" type="ssddetect" name="ssddetect" output="screen" launch-prefix="$(arg launch_prefix) gdb -ex run"-->
+  <node pkg="ssddetect" type="ssddetect" name="ssddetect" output="screen" launch-prefix="$(arg launch_prefix)">
+    <param name="graph_path"          value="$(arg ssd_graph_path)" />
+    <param name="face_cascade"     value="$(find ssddetect)/config/haarcascade_frontalface_alt.xml" />
+    
+  </node>
+
+</launch>

@@ -1,0 +1,2 @@
+SSDdetect:beginner_tutorials
+-DCATKIN_DEVEL_PREFIX=/home/ziwei/GS_catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/ziwei/GS_catkin_ws/install -G Unix Makefiles
