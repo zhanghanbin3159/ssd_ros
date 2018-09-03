@@ -3,7 +3,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/ssddetect_lib.dir/src/image_interface.cpp.o"
   "CMakeFiles/ssddetect_lib.dir/src/fp16.c.o"
   "CMakeFiles/ssddetect_lib.dir/src/ncs_param.cpp.o"
-  "CMakeFiles/ssddetect_lib.dir/src/facenet.cpp.o"
   "/home/ziwei/GS_catkin_ws/devel/lib/libssddetect_lib.pdb"
   "/home/ziwei/GS_catkin_ws/devel/lib/libssddetect_lib.so"
 )

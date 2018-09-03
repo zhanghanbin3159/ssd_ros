@@ -6,42 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/home/ziwei/GS_catkin_ws/devel/include/ssddetect/BoundingBox.h
-string
--
-vector
--
-map
--
-ros/types.h
--
-ros/serialization.h
--
-ros/builtin_message_traits.h
--
-ros/message_operations.h
--
-
-/home/ziwei/GS_catkin_ws/devel/include/ssddetect/BoundingBoxes.h
-string
--
-vector
--
-map
--
-ros/types.h
--
-ros/serialization.h
--
-ros/builtin_message_traits.h
--
-ros/message_operations.h
--
-std_msgs/Header.h
--
-ssddetect/BoundingBox.h
--
-
 /home/ziwei/GS_catkin_ws/src/SSDdetect/include/SSD_Detector.hpp
 math.h
 -
@@ -89,14 +53,6 @@ ncs_param.h
 /home/ziwei/GS_catkin_ws/src/SSDdetect/include/ncs_param.h
 image_interface.h
 /home/ziwei/GS_catkin_ws/src/SSDdetect/include/image_interface.h
-fp16.h
-/home/ziwei/GS_catkin_ws/src/SSDdetect/include/fp16.h
-
-/home/ziwei/GS_catkin_ws/src/SSDdetect/include/facenet.h
-math.h
--
-ncs_param.h
-/home/ziwei/GS_catkin_ws/src/SSDdetect/include/ncs_param.h
 fp16.h
 /home/ziwei/GS_catkin_ws/src/SSDdetect/include/fp16.h
 
@@ -151,6 +107,8 @@ stdlib.h
 -
 string.h
 -
+limits.h
+-
 math.h
 -
 stdio.h
@@ -199,10 +157,6 @@ SSD_Detector.hpp
 /home/ziwei/GS_catkin_ws/src/SSDdetect/src/SSD_Detector.hpp
 X11/Xlib.h
 -
-
-/home/ziwei/GS_catkin_ws/src/SSDdetect/src/facenet.cpp
-facenet.h
-/home/ziwei/GS_catkin_ws/src/SSDdetect/src/facenet.h
 
 /home/ziwei/GS_catkin_ws/src/SSDdetect/src/image_interface.cpp
 image_interface.h

@@ -3,17 +3,19 @@
 //ncs flag for yolo
 bool g_graph_Success;
 bool g_image_Success;
-mvncStatus retCode;
-void *deviceHandle;
+ncStatus_t retCode;
+struct ncDeviceHandle_t *deviceHandle;
 char devName[NAME_SIZE];
 unsigned int graphFileLen;
-void* graphHandle;
+struct ncGraphHandle_t* graphHandle;
 void* graphFileBuf;
+struct ncFifoHandle_t* inFifoHandle;
+struct ncFifoHandle_t* outFifoHandle;
 
 //ncs flag for facenet
 bool g_graph_Success_face;
 bool g_image_Success_face;
-mvncStatus retCode_face;
+ncStatus_t retCode_face;
 void *deviceHandle_face;
 char devName_face[NAME_SIZE];
 unsigned int graphFileLen_face;
@@ -25,16 +27,89 @@ std::mutex mutexLaserSet;
 std::mutex mutexSelectId;
 std::mutex mutexCameraRects;
 
-half *LoadImage(unsigned char *img, int reqsize, int width, int height)
+//half *LoadImage(unsigned char *img, int reqsize, int width, int height)
+//{
+//    int i;
+//    unsigned char *imgresized;
+//    float *imgfp32;
+//    half *imgfp16;
+//
+//    if(!img)
+//    {
+//        printf("The picture  could not be loaded\n");
+//        return 0;
+//    }
+//    imgresized = (unsigned char*) malloc(3*reqsize*reqsize);
+//    if(!imgresized)
+//    {
+//        free(img);
+//        perror("malloc");
+//        return 0;
+//    }
+//    //std::cout << "img: " << img << std::endl;
+//    stbir_resize_uint8(img, width, height, 0, imgresized, reqsize, reqsize, 0, 3);
+//    free(img);
+//    imgfp32 = (float*) malloc(sizeof(*imgfp32) * reqsize * reqsize * 3);
+//    if(!imgfp32)
+//    {
+//        free(imgresized);
+//        perror("malloc");
+//        return 0;
+//    }
+//    for(i = 0; i < reqsize * reqsize * 3; i++)
+//        imgfp32[i] = imgresized[i];
+//    free(imgresized);
+//    imgfp16 = (half*) malloc(sizeof(*imgfp16) * reqsize * reqsize * 3);
+//    if(!imgfp16)
+//    {
+//        free(imgfp32);
+//        perror("malloc");
+//        return 0;
+//    }
+//    //adjust values to range between -1.0 and + 1.0
+//    //change color channel
+//    for(i = 0; i < reqsize*reqsize; i++)
+//    {
+//        float blue, green, red;
+//        blue = imgfp32[3*i+2];
+//        green = imgfp32[3*i+1];
+//        red = imgfp32[3*i+0];
+//        imgfp32[3*i+0] = (blue-127.5)*0.007843;
+//        imgfp32[3*i+1] = (green-127.5)*0.007843;
+//        imgfp32[3*i+2] = (red-127.5)*0.007843;
+//        // uncomment to see what values are getting passed to mvncLoadTensor() before conversion to half float
+//        //printf("Blue: %f, Grean: %f,  Red: %f \n", imgfp32[3*i+0], imgfp32[3*i+1], imgfp32[3*i+2]);
+//    }
+//    floattofp16((unsigned char *)imgfp16, imgfp32, 3*reqsize*reqsize);
+//    free(imgfp32);
+//    return imgfp16;
+//}
+
+// Assumption that a float is a 32 bit value
+// read an image file from the file system and put it into
+// and convert it to an array of floats
+// path is a null terminated full or relative path to the image file
+//      The file is assumed to be a .jpg or .png
+// reqsize is the dimension the image should be resized to.  It is
+//         assumed to be square so this is the height and width dimension
+// mean is an array of 3 floats that are the network mean for each channel.
+//      this is in BGR order.
+// bufSize If not NULL will be set to the number of bytes allocated which will be:
+//         sizeof(float) * reqsize * reqsize * 3;
+float *LoadImage32(unsigned char *img, int reqsize, int width, int height, unsigned int* bufSize)
 {
-    int i;
+    if (bufSize != NULL)
+    {
+        *bufSize = 0;
+    }
+//    int width, height, cp, i;
     unsigned char *imgresized;
     float *imgfp32;
-    half *imgfp16;
 
+//    img = stbi_load(path, &width, &height, &cp, 3);
     if(!img)
     {
-        printf("The picture  could not be loaded\n");
+        printf("The picture %s could not be loaded\n");
         return 0;
     }
     imgresized = (unsigned char*) malloc(3*reqsize*reqsize);
@@ -44,45 +119,47 @@ half *LoadImage(unsigned char *img, int reqsize, int width, int height)
         perror("malloc");
         return 0;
     }
-    //std::cout << "img: " << img << std::endl;
     stbir_resize_uint8(img, width, height, 0, imgresized, reqsize, reqsize, 0, 3);
     free(img);
-    imgfp32 = (float*) malloc(sizeof(*imgfp32) * reqsize * reqsize * 3);
+    unsigned int allocateSize = sizeof(*imgfp32) * reqsize * reqsize * 3;
+    if (bufSize != NULL)
+    {
+        *bufSize = allocateSize;
+    }
+    imgfp32 = (float*) malloc(allocateSize);
     if(!imgfp32)
     {
+        if (bufSize != NULL)
+        {
+            *bufSize = 0;
+        }
         free(imgresized);
         perror("malloc");
         return 0;
     }
-    for(i = 0; i < reqsize * reqsize * 3; i++)
+    for(int i = 0; i < reqsize * reqsize * 3; i++)
+    {
         imgfp32[i] = imgresized[i];
-    free(imgresized);
-    imgfp16 = (half*) malloc(sizeof(*imgfp16) * reqsize * reqsize * 3);
-    if(!imgfp16)
-    {
-        free(imgfp32);
-        perror("malloc");
-        return 0;
     }
-    //adjust values to range between -1.0 and + 1.0
-    //change color channel
-    for(i = 0; i < reqsize*reqsize; i++)
+    free(imgresized);
+    for(int i = 0; i < reqsize*reqsize; i++)
     {
+        // imgfp32 comes in RGB order but network expects to be in
+        // BRG order so convert to BGR here while subtracting the mean.
         float blue, green, red;
         blue = imgfp32[3*i+2];
         green = imgfp32[3*i+1];
         red = imgfp32[3*i+0];
+
         imgfp32[3*i+0] = (blue-127.5)*0.007843;
         imgfp32[3*i+1] = (green-127.5)*0.007843;
         imgfp32[3*i+2] = (red-127.5)*0.007843;
+
         // uncomment to see what values are getting passed to mvncLoadTensor() before conversion to half float
         //printf("Blue: %f, Grean: %f,  Red: %f \n", imgfp32[3*i+0], imgfp32[3*i+1], imgfp32[3*i+2]);
     }
-    floattofp16((unsigned char *)imgfp16, imgfp32, 3*reqsize*reqsize);
-    free(imgfp32);
-    return imgfp16;
+    return imgfp32;
 }
-
 
 half *LoadImage_face(unsigned char *img, int reqsize, int width, int height)
 {

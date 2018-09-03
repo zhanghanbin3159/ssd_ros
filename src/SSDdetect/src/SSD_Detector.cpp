@@ -140,12 +140,23 @@ namespace ssd_ros {
 
         //clear and close ncs
         ROS_INFO("Delete movidius SSD graph");
-        retCode = mvncDeallocateGraph(graphHandle);
-        graphHandle = NULL;
+        // Clean up the FIFOs
+        ncFifoDestroy(&inFifoHandle);
+        ncFifoDestroy(&outFifoHandle);
 
-        free(graphFileBuf);
-        retCode = mvncCloseDevice(deviceHandle);
-        deviceHandle = NULL;
+        // Clean up the graph
+        ncGraphDestroy(&graphHandle);
+
+        // Close and clean up the device
+        ncDeviceClose(deviceHandle);
+        ncDeviceDestroy(&deviceHandle);
+
+//        retCode = mvncDeallocateGraph(graphHandle);
+//        graphHandle = NULL;
+//
+//        free(graphFileBuf);
+//        retCode = mvncCloseDevice(deviceHandle);
+//        deviceHandle = NULL;
 
         ssdThread_.join();
     }
@@ -178,22 +189,31 @@ namespace ssd_ros {
 
     // ncsdk1
     void SSD_Detector::init_ncs() {
-        retCode = mvncGetDeviceName(0, devName, NAME_SIZE);
-        if (retCode != MVNC_OK) {   // failed to get device name, maybe none plugged in.
-            printf("No NCS SSD devices found\n");
+        // Create a device handle for the first device found (index 0)
+        retCode = ncDeviceCreate(0, &deviceHandle);
+        if (retCode != NC_OK) {
+            printf("Error [%d]: Could not create a neural compute device handle.\n", retCode);
             exit(-1);
         }
 
-        // Try to open the NCS device via the device name
-        retCode = mvncOpenDevice(devName, &deviceHandle);
-        if (retCode != MVNC_OK) {   // failed to open the device.
-            printf("Could not open NCS device\n");
+        // Boot the device and open communication
+        retCode = ncDeviceOpen(deviceHandle);
+        if (retCode != NC_OK) {
+            printf("Error [%d]: Could not open the neural compute device.\n", retCode);
             exit(-1);
         }
 
         // deviceHandle is ready to use now.
         // Pass it to other NC API calls as needed and close it when finished.
         printf("Successfully opened NCS device!\n");
+
+        // Initialize a graph handle
+        retCode = ncGraphCreate("mobilenetv2 graph", &graphHandle);
+        if (retCode != NC_OK) {
+            printf("Error [%d]: Could not create a graph handle.\n", retCode);
+            // Do clean up...
+            exit(-1);
+        }
 
         // import graph to ncs
         std::string graphPath;
@@ -202,21 +222,38 @@ namespace ssd_ros {
         nodeHandle_.param("ssd_model/graph_file/name", graphModel, std::string("mobilenet_ssd_graph"));
         nodeHandle_.param("graph_path", graphPath, std::string("/default"));
         graphPath += "/" + graphModel;
+        std::cout << "graphPath: " << graphPath << std::endl;
+
         GRAPH_FILE_NAME = new char[graphPath.length() + 1];
         strcpy(GRAPH_FILE_NAME, graphPath.c_str());
 
-        // Now read in a graph file
-        graphFileBuf = LoadFile(GRAPH_FILE_NAME, &graphFileLen);
-
-        // allocate the graph
-        retCode = mvncAllocateGraph(deviceHandle, &graphHandle, graphFileBuf, graphFileLen);
-        if (retCode != MVNC_OK) {   // error allocating graph
-            printf("Could not allocate graph for file: %s\n", GRAPH_FILE_NAME);
-            printf("Error from mvncAllocateGraph is: %d\n", retCode);
+        // Allocate the graph to the device and create input and output FIFOs with default options
+        unsigned int graphFileLen;
+        void* graphFileBuf = LoadFile(GRAPH_FILE_NAME, &graphFileLen);
+        retCode = ncGraphAllocateWithFifos(deviceHandle, graphHandle, graphFileBuf,
+                                           graphFileLen, &inFifoHandle, &outFifoHandle);
+        if (retCode != NC_OK) {
+            printf("Error [%d]: Could not allocate graph with FIFOs.\n", retCode);
+            // Do clean up...
+            exit(-1);
         } else {
             printf("Successfully allocate graph for file: %s\n", GRAPH_FILE_NAME);
             g_graph_Success = true;
         }
+//        free(graphFileBuf);
+
+//        // Now read in a graph file
+//        graphFileBuf = LoadFile(GRAPH_FILE_NAME, &graphFileLen);
+//
+//        // allocate the graph
+//        retCode = mvncAllocateGraph(deviceHandle, &graphHandle, graphFileBuf, graphFileLen);
+//        if (retCode != MVNC_OK) {   // error allocating graph
+//            printf("Could not allocate graph for file: %s\n", GRAPH_FILE_NAME);
+//            printf("Error from mvncAllocateGraph is: %d\n", retCode);
+//        } else {
+//            printf("Successfully allocate graph for file: %s\n", GRAPH_FILE_NAME);
+//            g_graph_Success = true;
+//        }
     }
 
     void SSD_Detector::init() {
@@ -503,7 +540,7 @@ namespace ssd_ros {
         return 0;
     }
 
-    // mobilenetssd infer 修改成ncsdk2
+
     void *SSD_Detector::detectInThread() {
         //printf("Detect an image!\n");
         running_ = 1;
@@ -512,37 +549,60 @@ namespace ssd_ros {
         unsigned char *img = cvMat_to_charImg(in);
         use_time = buff_time[(buffIndex_ + 2) % 3];
 
-        unsigned int graphFileLen;
-        half *imageBufFp16 = LoadImage(img, networkDim, in.cols, in.rows);
+//        unsigned int graphFileLen;
         // calculate the length of the buffer that contains the half precision floats.
         // 3 channels * width * height * sizeof a 16bit float
-        unsigned int lenBufFp16 = 3 * networkDim * networkDim * sizeof(*imageBufFp16);
+        unsigned int lenBufFp32 = 3 * networkDim * networkDim * sizeof(float);
+        float *imageBufFp32 = LoadImage32(img, networkDim, in.cols, in.rows,NULL);
+
         //std::cout << "networkDim: " << networkDim << " imageBufFp16: " << sizeof(*imageBufFp16) << " lenBufFp16: " << lenBufFp16 << std::endl;
-        retCode = mvncLoadTensor(graphHandle, imageBufFp16, lenBufFp16, NULL);
-        if (retCode != MVNC_OK) {     // error loading tensor
+        // Write the tensor to the input FIFO and queue an inference
+        retCode = ncGraphQueueInferenceWithFifoElem(
+                graphHandle, inFifoHandle, outFifoHandle,
+                imageBufFp32, &lenBufFp32, NULL);
+        if (retCode != NC_OK) {     // error loading tensor
             perror("Could not load ssd tensor\n");
             printf("Error from mvncLoadTensor is: %d\n", retCode);
             return 0;
         }
+
+        // Get the size of the output tensor
+        unsigned int outFifoElemSize = 0;
+        unsigned int optionSize = sizeof(outFifoElemSize);
+        retCode = ncFifoGetOption(outFifoHandle,  NC_RO_FIFO_ELEMENT_DATA_SIZE,
+                                  &outFifoElemSize, &optionSize);
+        if (retCode != NC_OK) {
+            printf("Error [%d]: Could not get the output FIFO element data size.\n", retCode);
+            // Do clean up...
+            exit(-1);
+        }
+
         // printf("Successfully loaded the tensor for image\n");
-        void *resultData16;
-        void *userParam;
-        unsigned int lenResultData;
-        retCode = mvncGetResult(graphHandle, &resultData16, &lenResultData, &userParam);
-        if (retCode == MVNC_OK) {
+//        void *resultData16;
+//        void *userParam;
+//        unsigned int lenResultData;
+        //retCode = mvncGetResult(graphHandle, &resultData16, &lenResultData, &userParam);
+
+        // Get the output tensor
+        float* resultData = (float*) malloc(outFifoElemSize);
+        void* userParam;  // this will be set to point to the user-defined data that you passed into ncGraphQueueInferenceWithFifoElem() with this tensor
+        retCode = ncFifoReadElem(outFifoHandle, (void*)resultData, &outFifoElemSize, &userParam);
+
+
+        if (retCode == NC_OK) {
             // Successfully got the result.  The inference result is in the buffer pointed to by resultData
             // convert half precision floats to full floats
             //std::cout << "lenResultData: " << lenResultData << std::endl;
-            int numResults = lenResultData / sizeof(half);
-            float *resultData32;
-            resultData32 = (float *) malloc(numResults * sizeof(*resultData32));
-            fp16tofloat(resultData32, (unsigned char *) resultData16, numResults);
+//            int numResults = outFifoElemSize / (int)sizeof(float);
+//            float *resultData32;
+//            resultData32 = (float *) malloc(numResults * sizeof(*resultData32));
+//            fp16tofloat(resultData32, (unsigned char *) resultData16, numResults);
 
             //resultData32 = array_transform(resultData32,13,13,numResults);
             std::vector <Box> resultBoxes;
             //std::cout << "numResults: " << numResults << std::endl;
             //std::cout << "resultData32: "<< resultData32[0] << std::endl;
-            SSD_result_infer(resultData32, resultBoxes, buff_[(buffIndex_ + 2) % 3]); //display_img上带框的结果
+            SSD_result_infer(resultData, resultBoxes, buff_[(buffIndex_ + 2) % 3]); //display_img上带框的结果
 
             //std::cout << "enableConsoleOutput_: " << enableConsoleOutput_ << std::endl;
             if (enableConsoleOutput_) {
@@ -726,7 +786,7 @@ namespace ssd_ros {
         demoTime_ = getWallTime();
         //std::cout << "demoDone_: " << demoDone_ << std::endl;
         while (!demoDone_) {
-            //std::cout << "inside" << std::endl;
+            std::cout << "buffIndex_: " << buffIndex_ << std::endl;
             buffIndex_ = (buffIndex_ + 1) % 3;
             fetch_thread = std::thread(&SSD_Detector::fetchInThread, this);
             detect_thread = std::thread(&SSD_Detector::detectInThread, this);
@@ -742,6 +802,7 @@ namespace ssd_ros {
             fetch_thread.join();
             detect_thread.join();
             ++count;
+            std::cout<<"ssd() count: " << count << std::endl;
             if (!isNodeRunning()) {
                 demoDone_ = true;
             }

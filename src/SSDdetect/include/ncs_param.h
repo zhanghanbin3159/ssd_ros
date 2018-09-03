@@ -35,17 +35,26 @@ extern "C" {
 //ncs flag for ssd
 extern  bool g_graph_Success;
 extern  bool g_image_Success;
-extern  mvncStatus retCode;
-extern  void *deviceHandle;
+extern  ncStatus_t retCode;
+//extern  void *deviceHandle;
 extern  char devName[NAME_SIZE];
-extern  unsigned int graphFileLen;
-extern  void* graphHandle;
-extern  void* graphFileBuf;
+//extern  unsigned int graphFileLen;
+//extern void* inFifoHandle;
+//extern void* outFifoHandle;
+//extern void* graphHandle;
+//extern void* deviceHandle;
+//
+//
+//// ncsdk2
+extern struct ncFifoHandle_t* inFifoHandle;
+extern struct ncFifoHandle_t* outFifoHandle;
+extern struct ncGraphHandle_t* graphHandle;
+extern struct ncDeviceHandle_t* deviceHandle;
 
 //ncs flag for facenet
 extern  bool g_graph_Success_face;
 extern  bool g_image_Success_face;
-extern  mvncStatus retCode_face;
+extern  ncStatus_t retCode_face;
 extern  void *deviceHandle_face;
 extern  char devName_face[NAME_SIZE];
 extern  unsigned int graphFileLen_face;
@@ -64,7 +73,8 @@ extern std::mutex mutexCameraRects;
 extern void ipl_into_image(IplImage* src, image im);
 extern image ipl_to_image(IplImage* src);
 
-extern half *LoadImage(unsigned char *img, int reqsize, int width, int height);
+//extern half *LoadImage(unsigned char *img, int reqsize, int width, int height);
+extern float *LoadImage32(unsigned char *img, int reqsize, int width, int height, unsigned int* bufSize);
 extern half *LoadImage_face(unsigned char *img, int reqsize, int width, int height);
 extern void *LoadFile(const char *path, unsigned int *length);
 extern unsigned char* image_to_stb(image in);

@@ -1539,33 +1539,6 @@ src/SSD_Detector.cpp.s:
 	cd /home/ziwei/GS_catkin_ws/build && $(MAKE) -f SSDdetect/CMakeFiles/ssddetect_lib.dir/build.make SSDdetect/CMakeFiles/ssddetect_lib.dir/src/SSD_Detector.cpp.s
 .PHONY : src/SSD_Detector.cpp.s
 
-src/facenet.o: src/facenet.cpp.o
-
-.PHONY : src/facenet.o
-
-# target to build an object file
-src/facenet.cpp.o:
-	cd /home/ziwei/GS_catkin_ws/build && $(MAKE) -f SSDdetect/CMakeFiles/ssddetect_lib.dir/build.make SSDdetect/CMakeFiles/ssddetect_lib.dir/src/facenet.cpp.o
-.PHONY : src/facenet.cpp.o
-
-src/facenet.i: src/facenet.cpp.i
-
-.PHONY : src/facenet.i
-
-# target to preprocess a source file
-src/facenet.cpp.i:
-	cd /home/ziwei/GS_catkin_ws/build && $(MAKE) -f SSDdetect/CMakeFiles/ssddetect_lib.dir/build.make SSDdetect/CMakeFiles/ssddetect_lib.dir/src/facenet.cpp.i
-.PHONY : src/facenet.cpp.i
-
-src/facenet.s: src/facenet.cpp.s
-
-.PHONY : src/facenet.s
-
-# target to generate assembly for a file
-src/facenet.cpp.s:
-	cd /home/ziwei/GS_catkin_ws/build && $(MAKE) -f SSDdetect/CMakeFiles/ssddetect_lib.dir/build.make SSDdetect/CMakeFiles/ssddetect_lib.dir/src/facenet.cpp.s
-.PHONY : src/facenet.cpp.s
-
 src/fp16.o: src/fp16.c.o
 
 .PHONY : src/fp16.o
@@ -1754,9 +1727,6 @@ help:
 	@echo "... src/SSD_Detector.o"
 	@echo "... src/SSD_Detector.i"
 	@echo "... src/SSD_Detector.s"
-	@echo "... src/facenet.o"
-	@echo "... src/facenet.i"
-	@echo "... src/facenet.s"
 	@echo "... src/fp16.o"
 	@echo "... src/fp16.i"
 	@echo "... src/fp16.s"

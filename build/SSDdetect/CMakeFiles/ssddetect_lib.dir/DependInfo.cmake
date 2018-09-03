@@ -45,7 +45,6 @@ set(CMAKE_C_TARGET_INCLUDE_PATH
   )
 set(CMAKE_DEPENDS_CHECK_CXX
   "/home/ziwei/GS_catkin_ws/src/SSDdetect/src/SSD_Detector.cpp" "/home/ziwei/GS_catkin_ws/build/SSDdetect/CMakeFiles/ssddetect_lib.dir/src/SSD_Detector.cpp.o"
-  "/home/ziwei/GS_catkin_ws/src/SSDdetect/src/facenet.cpp" "/home/ziwei/GS_catkin_ws/build/SSDdetect/CMakeFiles/ssddetect_lib.dir/src/facenet.cpp.o"
   "/home/ziwei/GS_catkin_ws/src/SSDdetect/src/image_interface.cpp" "/home/ziwei/GS_catkin_ws/build/SSDdetect/CMakeFiles/ssddetect_lib.dir/src/image_interface.cpp.o"
   "/home/ziwei/GS_catkin_ws/src/SSDdetect/src/ncs_param.cpp" "/home/ziwei/GS_catkin_ws/build/SSDdetect/CMakeFiles/ssddetect_lib.dir/src/ncs_param.cpp.o"
   )

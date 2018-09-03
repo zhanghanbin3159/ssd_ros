@@ -102,7 +102,7 @@ add_library(${PROJECT_NAME}_lib
         src/image_interface.cpp
         src/fp16.c
         src/ncs_param.cpp
-        src/facenet.cpp
+#        src/facenet.cpp
         ${extra_files}
         )
 
