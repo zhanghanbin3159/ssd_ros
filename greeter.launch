@@ -2,11 +2,8 @@
 <launch>
  <param name="use_sim_time" value="true" />
 
- <!-- Console launch prefix -->
+  <!-- Console launch prefix -->
   <arg name="launch_prefix" default=""/>
-
-  <!-- Config folder. -->
-  <arg name="ssd_config_path" default="$(find ssddetect)/ssd_network_config/cfg"/>
 
   <!-- graph folder. -->
   <arg name="ssd_graph_path"  default="$(find ssddetect)/ssd_network_config/graph"/>
@@ -18,7 +15,7 @@
   <rosparam command="load" ns="ssddetect" file="$(find ssddetect)/config/facenet.yaml"/>
 
   <!--rosparam command="load" file="$(find human_track)/config/ros.yaml"/>
-  <rosparam command="load"  file="$(find human_track)/config/gaussian_person_ncs.yaml"/-->
+  <rosparam command="load"  file="$(find human_track)/config/gaussian_person_ncs.yaml"-->
 
   <!--node pkg="ssddetect" type="ssddetect" name="ssddetect" output="screen" launch-prefix="$(arg launch_prefix) gdb -ex run"-->
   <node pkg="ssddetect" type="ssddetect" name="ssddetect" output="screen" launch-prefix="$(arg launch_prefix)">

@@ -1,22 +1,22 @@
 Determining if the pthread_create exist failed with the following output:
 Change Dir: /home/ziwei/GS_catkin_ws/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_7091d/fast"
-/usr/bin/make -f CMakeFiles/cmTC_7091d.dir/build.make CMakeFiles/cmTC_7091d.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_b6a51/fast"
+/usr/bin/make -f CMakeFiles/cmTC_b6a51.dir/build.make CMakeFiles/cmTC_b6a51.dir/build
 make[1]: Entering directory '/home/ziwei/GS_catkin_ws/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_7091d.dir/CheckSymbolExists.c.o
-/usr/bin/cc     -o CMakeFiles/cmTC_7091d.dir/CheckSymbolExists.c.o   -c /home/ziwei/GS_catkin_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
-Linking C executable cmTC_7091d
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7091d.dir/link.txt --verbose=1
-/usr/bin/cc       CMakeFiles/cmTC_7091d.dir/CheckSymbolExists.c.o  -o cmTC_7091d -rdynamic 
-CMakeFiles/cmTC_7091d.dir/CheckSymbolExists.c.o: In function `main':
+Building C object CMakeFiles/cmTC_b6a51.dir/CheckSymbolExists.c.o
+/usr/bin/cc     -o CMakeFiles/cmTC_b6a51.dir/CheckSymbolExists.c.o   -c /home/ziwei/GS_catkin_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_b6a51
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b6a51.dir/link.txt --verbose=1
+/usr/bin/cc       CMakeFiles/cmTC_b6a51.dir/CheckSymbolExists.c.o  -o cmTC_b6a51 -rdynamic 
+CMakeFiles/cmTC_b6a51.dir/CheckSymbolExists.c.o: In function `main':
 CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
 collect2: error: ld returned 1 exit status
-CMakeFiles/cmTC_7091d.dir/build.make:97: recipe for target 'cmTC_7091d' failed
-make[1]: *** [cmTC_7091d] Error 1
+CMakeFiles/cmTC_b6a51.dir/build.make:97: recipe for target 'cmTC_b6a51' failed
+make[1]: *** [cmTC_b6a51] Error 1
 make[1]: Leaving directory '/home/ziwei/GS_catkin_ws/build/CMakeFiles/CMakeTmp'
-Makefile:126: recipe for target 'cmTC_7091d/fast' failed
-make: *** [cmTC_7091d/fast] Error 2
+Makefile:126: recipe for target 'cmTC_b6a51/fast' failed
+make: *** [cmTC_b6a51/fast] Error 2
 
 File /home/ziwei/GS_catkin_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
 /* */
@@ -36,20 +36,20 @@ int main(int argc, char** argv)
 Determining if the function pthread_create exists in the pthreads failed with the following output:
 Change Dir: /home/ziwei/GS_catkin_ws/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_eb91a/fast"
-/usr/bin/make -f CMakeFiles/cmTC_eb91a.dir/build.make CMakeFiles/cmTC_eb91a.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_e9078/fast"
+/usr/bin/make -f CMakeFiles/cmTC_e9078.dir/build.make CMakeFiles/cmTC_e9078.dir/build
 make[1]: Entering directory '/home/ziwei/GS_catkin_ws/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_eb91a.dir/CheckFunctionExists.c.o
-/usr/bin/cc    -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_eb91a.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.5/Modules/CheckFunctionExists.c
-Linking C executable cmTC_eb91a
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_eb91a.dir/link.txt --verbose=1
-/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_eb91a.dir/CheckFunctionExists.c.o  -o cmTC_eb91a -rdynamic -lpthreads 
+Building C object CMakeFiles/cmTC_e9078.dir/CheckFunctionExists.c.o
+/usr/bin/cc    -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_e9078.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.5/Modules/CheckFunctionExists.c
+Linking C executable cmTC_e9078
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e9078.dir/link.txt --verbose=1
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_e9078.dir/CheckFunctionExists.c.o  -o cmTC_e9078 -rdynamic -lpthreads 
 /usr/bin/ld: cannot find -lpthreads
 collect2: error: ld returned 1 exit status
-CMakeFiles/cmTC_eb91a.dir/build.make:97: recipe for target 'cmTC_eb91a' failed
-make[1]: *** [cmTC_eb91a] Error 1
+CMakeFiles/cmTC_e9078.dir/build.make:97: recipe for target 'cmTC_e9078' failed
+make[1]: *** [cmTC_e9078] Error 1
 make[1]: Leaving directory '/home/ziwei/GS_catkin_ws/build/CMakeFiles/CMakeTmp'
-Makefile:126: recipe for target 'cmTC_eb91a/fast' failed
-make: *** [cmTC_eb91a/fast] Error 2
+Makefile:126: recipe for target 'cmTC_e9078/fast' failed
+make: *** [cmTC_e9078/fast] Error 2
 
 

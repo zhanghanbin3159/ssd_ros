@@ -1,6 +1,6 @@
 ssd_model:
   graph_file:
-    name: MobileNetSSDV2_60000
+    name: MobileNetSSDV2_NCSDKV2_2Category_64000.graph
   threshold:
     value: 0.3
   detection_classes:

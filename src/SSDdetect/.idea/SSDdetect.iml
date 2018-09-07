@@ -6,7 +6,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/SSD_Detector.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/image_interface.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/ncs_param.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/facenet.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/main.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/package.xml" isTestSource="false" />
