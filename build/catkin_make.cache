@@ -1,0 +1,2 @@
+SSDdetect
+-DCATKIN_DEVEL_PREFIX=/media/ziwei/Harddisk02/HanBin/TOOL/workspace_C++/Detect/devel -DCMAKE_INSTALL_PREFIX=/media/ziwei/Harddisk02/HanBin/TOOL/workspace_C++/Detect/install -G Unix Makefiles
