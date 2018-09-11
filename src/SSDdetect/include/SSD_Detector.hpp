@@ -212,6 +212,7 @@ namespace ssd_ros {
         int waitKeyDelay_;
         int fullScreen_;
         char *demoPrefix_;
+        bool flipFlag;
 
         float ssd_threshold;
 

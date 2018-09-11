@@ -258,6 +258,7 @@ namespace ssd_ros {
         std::string detectionImageTopicName;
         int detectionImageQueueSize;
         bool detectionImageLatch;
+        bool flip_flag;
 
         nodeHandle_.param("subscribers/camera_reading/topic", cameraTopicName,
                           std::string("/camera/image_raw"));
@@ -274,6 +275,7 @@ namespace ssd_ros {
                           std::string("detection_image"));
         nodeHandle_.param("publishers/detection_image/queue_size", detectionImageQueueSize, 1);
         nodeHandle_.param("publishers/detection_image/latch", detectionImageLatch, true);
+        nodeHandle_.param("camera/image_flip", flip_flag, false);
 
         imageSubscriber_ = imageTransport_.subscribe(cameraTopicName, cameraQueueSize,
                                                      &SSD_Detector::cameraCallback, this);
@@ -285,6 +287,8 @@ namespace ssd_ros {
         detectionImagePublisher_ = nodeHandle_.advertise<sensor_msgs::Image>(detectionImageTopicName,
                                                                              detectionImageQueueSize,
                                                                              detectionImageLatch);
+        flipFlag = flip_flag;
+        //std::cout << "flipFlag: " << flipFlag << std::endl;
 
     }
 
@@ -318,7 +322,9 @@ namespace ssd_ros {
                 cv::Mat image0 = cam_image->image.clone();
                 IplImage copy = image0;
                 IplImage *frame = &copy;
-//                cvFlip(frame, NULL, 0); //翻转
+                //std::cout << "flipFlag: " << flipFlag << std::endl;
+                if(flipFlag)
+                    cvFlip(frame, NULL, 0); //翻转
                 camImageCopy_ = cv::cvarrToMat(frame, true);
 
 
@@ -411,7 +417,6 @@ namespace ssd_ros {
             if (Overlay_on_image(image, output_pass, 7, single_box))
                 result.push_back(single_box);
         }
-
     }
 
     //filter some boxes of which score lower than threshold
@@ -467,8 +472,14 @@ namespace ssd_ros {
     void *SSD_Detector::fetchInThread() {
         //printf("Fetch an image!\n");
         cv::Mat ROS_img = getCVImage();
-        buff_[buffIndex_] = ROS_img;
-        buff_original[buffIndex_] = ROS_img;
+//        buff_[buffIndex_].release();
+//        buff_original[buffIndex_].release();
+
+        ROS_img.copyTo(buff_[buffIndex_]);
+        ROS_img.copyTo(buff_original[buffIndex_]);
+
+//        buff_[buffIndex_] = ROS_img;
+//        buff_original[buffIndex_] = ROS_img;
         buff_time[buffIndex_] = ros::Time::now();
         ROS_img.release();
         return 0;
@@ -552,7 +563,6 @@ namespace ssd_ros {
                             roiBox.prob = resultBoxes[j].prob;
                             tmp.push_back(roiBox);
                         }
-
                     }
                 }
                 //std::cout << "tmp: " << tmp.size() << std::endl;
@@ -721,9 +731,6 @@ namespace ssd_ros {
 
         //std::cout << "publishInThread" << std::endl;
         cv::Mat cvImage = buff_[(buffIndex_ + 1) % 3];
-        if (!publishDetectionImage(cvImage)) {
-            ROS_DEBUG("Detection image has not been broadcasted.");
-        }
 
         std::vector<std::vector<RosBox_>> roiBoxes_temp;
         //Publish boundingBox
@@ -763,9 +770,21 @@ namespace ssd_ros {
                         boundingBox.ymin = ymin;
                         boundingBox.width = width;
                         boundingBox.height = height;
-                        //std::cout << "bbbbbb" << std::endl;
                         boundingBoxesResults_.boundingBoxes.push_back(boundingBox);
-                       // std::cout << "cccccc" << std::endl;
+
+                        cv::Rect box;
+                        box.x = xmin;
+                        box.y = ymin;
+                        box.width = width;
+                        box.height = height;
+
+//
+//                        cv::rectangle(cvImage, box, cv::Scalar(0,0,0), 2);
+//                        cv::putText(cvImage, "person",
+//                                    cv::Point(box.x, box.y),
+//                                    cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(0,0,0), 1, CV_AA);
+
+
                     }
                 }
             }
@@ -791,6 +810,12 @@ namespace ssd_ros {
 //            rosBoxes_[i].clear();
             rosBoxCounter_[i] = 0;
         }
+
+
+        if (!publishDetectionImage(cvImage)) {
+            ROS_DEBUG("Detection image has not been broadcasted.");
+        }
+
 //        rosBoxes_.clear();
 
 
