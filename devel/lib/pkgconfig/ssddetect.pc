@@ -1,8 +1,0 @@
-prefix=/media/ziwei/Harddisk02/HanBin/TOOL/workspace_C++/Detect/devel
-
-Name: ssddetect
-Description: Description of ssddetect
-Version: 1.0.1
-Cflags: -I/media/ziwei/Harddisk02/HanBin/TOOL/workspace_C++/Detect/devel/include -I/media/ziwei/Harddisk02/HanBin/TOOL/workspace_C++/Detect/src/SSDdetect/include -I/usr/include
-Libs: -L/media/ziwei/Harddisk02/HanBin/TOOL/workspace_C++/Detect/devel/lib -lssddetect_lib /usr/lib/x86_64-linux-gnu/libboost_thread.so /usr/lib/x86_64-linux-gnu/libboost_chrono.so /usr/lib/x86_64-linux-gnu/libboost_system.so /usr/lib/x86_64-linux-gnu/libboost_date_time.so /usr/lib/x86_64-linux-gnu/libboost_atomic.so /usr/lib/x86_64-linux-gnu/libpthread.so
-Requires: cv_bridge roscpp std_msgs actionlib_msgs geometry_msgs sensor_msgs image_transport
