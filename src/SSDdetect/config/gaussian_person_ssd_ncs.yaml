@@ -8,4 +8,5 @@ ssd_model:
       - background
       - person
       - face
+  SSDnms_threshold: 0.7
 

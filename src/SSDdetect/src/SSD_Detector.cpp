@@ -31,6 +31,14 @@ inline float getOverlap(const cv::Rect &b1, const cv::Rect &b2) //b1是激光的
 }
 
 
+void sizeSort(std::vector <Box> &M)
+{
+    sort(M.begin(),M.end(),[](const Box &a, const Box &b)
+    {
+        return a.width*a.height > b.width*b.height;
+    });
+}
+
 //num是laser 框的数量
 void draw_laser_box(image im, int num, std::vector<cv::Rect> laser_rects)
 {
@@ -151,6 +159,35 @@ namespace ssd_ros {
         ssdThread_.join();
     }
 
+
+    void SSD_Detector::NMS(std::vector <Box> &M)
+    {
+        sizeSort(M);
+        for(int i=0; i<M.size(); i++)
+        {
+            for(int j=i+1; j<M.size(); j++)
+            {
+                cv::Rect a, b;
+                a.x = M[i].x;
+                a.y = M[i].y;
+                a.width = M[i].width;
+                a.height = M[i].height;
+
+                b.x = M[j].x;
+                b.y = M[j].y;
+                b.width = M[j].width;
+                b.height = M[j].height;
+                //std::cout << "getOverlap(a, b): " << getOverlap(a, b) << std::endl;
+                if(getOverlap(a, b) > 0.7) //同类框的重复面积大于0.73需删除
+                {
+                    M.erase(M.begin()+j);
+                    j--;
+                    // std::cout << "delete a yolo rect" << std::endl;
+                }
+            }
+        }
+    }
+
     bool SSD_Detector::readParameters() {
         // Load common parameters.
         //std::cout << "read paramerters" << std::endl;
@@ -259,6 +296,7 @@ namespace ssd_ros {
         int detectionImageQueueSize;
         bool detectionImageLatch;
         bool flip_flag;
+        double ssdnms;
 
         nodeHandle_.param("subscribers/camera_reading/topic", cameraTopicName,
                           std::string("/camera/image_raw"));
@@ -276,6 +314,7 @@ namespace ssd_ros {
         nodeHandle_.param("publishers/detection_image/queue_size", detectionImageQueueSize, 1);
         nodeHandle_.param("publishers/detection_image/latch", detectionImageLatch, true);
         nodeHandle_.param("camera/image_flip", flip_flag, false);
+        nodeHandle_.param("ssd_model/SSDnms_threshold", ssdnms, 0.71);
 
         imageSubscriber_ = imageTransport_.subscribe(cameraTopicName, cameraQueueSize,
                                                      &SSD_Detector::cameraCallback, this);
@@ -288,7 +327,8 @@ namespace ssd_ros {
                                                                              detectionImageQueueSize,
                                                                              detectionImageLatch);
         flipFlag = flip_flag;
-        //std::cout << "flipFlag: " << flipFlag << std::endl;
+        SSD_NMS = ssdnms;
+        //std::cout << "SSD_NMS:" <<  SSD_NMS << std::endl;
 
     }
 
@@ -390,6 +430,7 @@ namespace ssd_ros {
     void SSD_Detector::SSD_result_infer(float *output, std::vector <Box> &result, cv::Mat &image) {
         //std::cout << "SSD_result_infer" << std::endl;
         int num_valid_boxes = output[0];
+        std::vector<Box> Rects_with_labels[numClasses_];
         //std::cout << "num_valid_boxes: " << num_valid_boxes << std::endl;
         // clip the boxes to the image size incase network returns boxes outside of the image
         for (int box_index = 0; box_index < num_valid_boxes; box_index++) {
@@ -412,11 +453,36 @@ namespace ssd_ros {
             for (int i = 0; i < 7; i++) {
                 output_pass[i] = output[base_index + i];
             }
-            Box single_box;
 
+            Box single_box;
             if (Overlay_on_image(image, output_pass, 7, single_box))
-                result.push_back(single_box);
+            {
+                int label_idx = single_box.label;
+                Rects_with_labels[label_idx].push_back(single_box);
+                //result.push_back(single_box); //Rects_with_labels
+            }
         }
+
+        for(int i =0; i < numClasses_; i++)
+        {
+            NMS(Rects_with_labels[i]);
+            for(int j = 0; j<Rects_with_labels[i].size(); j++)
+            {
+                cv::Rect box;
+                box.x = Rects_with_labels[i][j].x;
+                box.y = Rects_with_labels[i][j].y;
+                box.width = Rects_with_labels[i][j].width;
+                box.height = Rects_with_labels[i][j].height;
+                int red_level = (int) (255.0 / LABELS.size()) * Rects_with_labels[i][j].label;
+                std::string label = LABELS[(int) Rects_with_labels[i][j].label];
+                cv::rectangle(image, box, cv::Scalar(red_level, 255, 255), 2);
+                cv::putText(image, label,
+                        cv::Point(box.x, box.y),
+                        cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(red_level, 255, 255), 1, CV_AA);
+                result.push_back(Rects_with_labels[i][j]);
+            }
+        }
+
     }
 
     //filter some boxes of which score lower than threshold
@@ -439,22 +505,22 @@ namespace ssd_ros {
         int box_bottom = (int) (object_info[base_index + 6] * source_image_height);
         int box_width = box_right - box_left;
         int box_height = box_bottom - box_top;
-        cv::Rect box;
-        box.x = box_left;
-        box.y = box_top;
-        box.width = box_width;
-        box.height = box_height;
+//        cv::Rect box;
+//        box.x = box_left;
+//        box.y = box_top;
+//        box.width = box_width;
+//        box.height = box_height;
 
         int label_index = (int) object_info[base_index + 1];
-        std::string label = LABELS[(int) object_info[base_index + 1]];
-        int red_level = (int) (255.0 / LABELS.size()) * label_index;
-        if(label_index==1)
-        {
-            cv::rectangle(image, box, cv::Scalar(red_level, 255, 255), 2);
-            cv::putText(image, label,
-                        cv::Point(box.x, box.y),
-                        cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(red_level, 255, 255), 1, CV_AA);
-        }
+//        std::string label = LABELS[(int) object_info[base_index + 1]];
+//        int red_level = (int) (255.0 / LABELS.size()) * label_index;
+//        if(label_index==1)
+//        {
+//            cv::rectangle(image, box, cv::Scalar(red_level, 255, 255), 2);
+//            cv::putText(image, label,
+//                        cv::Point(box.x, box.y),
+//                        cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(red_level, 255, 255), 1, CV_AA);
+//        }
 //        std::cout << "box at index: " << label_index << " ClassID: " << LABELS[(int) object_info[base_index + 1]]
 //                  << " Confidence: " << object_info[base_index + 2]
 //                  << " Top Left: " << box_top << "," << box_left << " Bottom Right:" << box_right << "," << box_bottom

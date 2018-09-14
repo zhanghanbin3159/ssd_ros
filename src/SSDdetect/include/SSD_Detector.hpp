@@ -205,6 +205,8 @@ namespace ssd_ros {
         float *avg_;
         double demoTime_;
 
+        double SSD_NMS;
+
         std::vector<std::vector<RosBox_>> roiBoxes_;
         ros::Time use_time;
         bool viewImage_;
@@ -259,6 +261,8 @@ namespace ssd_ros {
         bool isNodeRunning(void);
 
         void *publishInThread();
+
+        void NMS(std::vector <Box> &M);
 
 //        void NMS(std::vector <cameraRect> &M);
     };
