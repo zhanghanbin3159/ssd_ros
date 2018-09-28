@@ -1,12 +1,13 @@
 ssd_model:
   graph_file:
-    name: Mobile-SSD_zhb_graph
+    name: MobileNetSSDV1_NCSDKV1_4Category_18000_voc.graph
   threshold:
     value: 0.3
   detection_classes:
     names:
       - background
       - person
-      - face
+      - car
+      - bicycle
   SSDnms_threshold: 0.7
 

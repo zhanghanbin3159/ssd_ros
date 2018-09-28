@@ -14,7 +14,7 @@
 //#include "stb_image.h"
 //#define STB_IMAGE_RESIZE_IMPLEMENTATION
 //#include "stb_image_resize.h"
-std::map<int, std::string> LABELS = {{0,"background"}, {1, "person"}, {2, "face"}};
+std::map<int, std::string> LABELS = {{0,"background"}, {1, "person"}, {2, "car"}, {3, "bicycle"}};
 // YOLO image dimensions, network mean values for each channel in BGR order.
 const int networkDim = 300;
 
@@ -505,22 +505,22 @@ namespace ssd_ros {
         int box_bottom = (int) (object_info[base_index + 6] * source_image_height);
         int box_width = box_right - box_left;
         int box_height = box_bottom - box_top;
-//        cv::Rect box;
-//        box.x = box_left;
-//        box.y = box_top;
-//        box.width = box_width;
-//        box.height = box_height;
+        cv::Rect box;
+        box.x = box_left;
+        box.y = box_top;
+        box.width = box_width;
+        box.height = box_height;
 
         int label_index = (int) object_info[base_index + 1];
-//        std::string label = LABELS[(int) object_info[base_index + 1]];
-//        int red_level = (int) (255.0 / LABELS.size()) * label_index;
-//        if(label_index==1)
-//        {
-//            cv::rectangle(image, box, cv::Scalar(red_level, 255, 255), 2);
-//            cv::putText(image, label,
-//                        cv::Point(box.x, box.y),
-//                        cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(red_level, 255, 255), 1, CV_AA);
-//        }
+        std::string label = LABELS[(int) object_info[base_index + 1]];
+        int red_level = (int) (255.0 / LABELS.size()) * label_index;
+        if(label_index != 0)
+        {
+            cv::rectangle(image, box, cv::Scalar(red_level, 255, 255), 2);
+            cv::putText(image, label,
+                        cv::Point(box.x, box.y),
+                        cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(red_level, 255, 255), 1, CV_AA);
+        }
 //        std::cout << "box at index: " << label_index << " ClassID: " << LABELS[(int) object_info[base_index + 1]]
 //                  << " Confidence: " << object_info[base_index + 2]
 //                  << " Top Left: " << box_top << "," << box_left << " Bottom Right:" << box_right << "," << box_bottom

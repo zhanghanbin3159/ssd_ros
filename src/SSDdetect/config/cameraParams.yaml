@@ -1,4 +1,5 @@
 camera:
+  image_flip: false
   camera_position: 0.8
   fx: 476.398
   fy: 476.397
